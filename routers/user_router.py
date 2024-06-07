@@ -14,9 +14,15 @@ router = APIRouter(
 auth_handler = AuthHandler()
 
 @router.get('/',response_model=List[pyd.UserSchema])
-async def get_reviews(db:Session=Depends(get_db)):
-    rev_db = db.query(models.User).all()
-    return rev_db
+async def get_users(username=Depends(auth_handler.auth_wrapper),db:Session=Depends(get_db)):
+    user_db = db.query(models.User).filter(
+        models.User.username == username
+    ).first()
+    if user_db.role_id == 1:
+        raise HTTPException(401,'Нет прав')
+    
+    user_db = db.query(models.User).all()
+    return user_db
 
 @router.post('/register',response_model=pyd.UserCreate)
 async def user_reg(user_input:pyd.UserCreate,db:Session=Depends(get_db)):
@@ -29,7 +35,7 @@ async def user_reg(user_input:pyd.UserCreate,db:Session=Depends(get_db)):
     user_db = models.User(
         username = user_input.username,
         password = hashed_pass,
-        role_id = user_input.role_id
+        role_id = 1
     )
     db.add(user_db)
     db.commit()

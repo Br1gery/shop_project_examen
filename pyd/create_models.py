@@ -5,7 +5,6 @@ from datetime import date,datetime
 class UserCreate(BaseModel):
     username: str = Field(..., max_length=255, example='UserName')
     password: str = Field(max_length=255, example='UserName')
-    role_id: int = Field(...,gt=0,le=3, example = 1)
 
     class Config:
         orm_mode = True

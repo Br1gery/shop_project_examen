@@ -81,6 +81,9 @@ async def change_review(rev_input:pyd.ReviewCreate,review_id:int,username=Depend
         models.Product.id == rev_input.product_id
     ).first()
 
+    if not prod_db:
+        raise HTTPException(404,'Product not found')
+
     prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
     db.commit()
     return rev_db
@@ -130,7 +133,12 @@ async def delete_review(review_id:int,username = Depends(auth_handler.auth_wrapp
     prod_db = db.query(models.Product).filter(
         models.Product.id == rev_db.product_id
     ).first()
-    
-    prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
+
+    if not prod_db:
+        raise HTTPException(404,'Product not found')
+    if len(reviews_db) >0:
+        prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
+    elif len(reviews_db) == 0:
+        prod_db.avg_rating = 0
     db.commit()
     return 'success'

@@ -26,7 +26,7 @@ async def add_product(prod_input:pyd.ProductCreate,username=Depends(auth_handler
         raise HTTPException(401,'Нет прав')
 
     prod_db = db.query(models.Product).filter(
-        models.Category.name == prod_input.name
+        models.Product.name == prod_input.name
     ).first()
     if prod_db:
         raise HTTPException(400,detail='Product exists')
