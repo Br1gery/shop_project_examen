@@ -36,7 +36,7 @@ async def user_reg(user_input:pyd.UserCreate,db:Session=Depends(get_db)):
     return user_db
 
 @router.post('/login')
-async def user_login(user_input:pyd.UserCreate,db:Session=Depends(get_db)):
+async def user_login(user_input:pyd.UserLogin,db:Session=Depends(get_db)):
     user_db = db.query(models.User).filter(
         models.User.username == user_input.username
     ).first()

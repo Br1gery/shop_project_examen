@@ -10,6 +10,13 @@ class UserCreate(BaseModel):
     class Config:
         orm_mode = True
 
+class UserLogin(BaseModel):
+    username: str = Field(..., max_length=255, example='UserName')
+    password: str = Field(max_length=255, example='UserName')
+
+    class Config:
+        orm_mode = True
+
 class CategoryCreate(BaseModel):
     name: str = Field(...,example = 'example_name')
     description: str = Field(..., example = 'example_description')
@@ -21,7 +28,7 @@ class ProductCreate(BaseModel):
     name: str = Field(...,example='example_name')
     description: str = Field(..., example = 'example_description')
     price: int = Field(...,gt = 0, example = 100)
-    avg_rating: int = Field(None, gt = 0, example = 0)
+    avg_rating: float = Field(None, ge = 0, example = 0)
 
     category_ids: List[int] = None
 

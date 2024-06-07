@@ -1,4 +1,4 @@
-from sqlalchemy import Numeric, Table, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Numeric, Table, Boolean, Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -25,7 +25,7 @@ class Product(Base):
     description = Column(String(255), nullable=True)
     price = Column(Integer, default=0)
 
-    avg_rating = Column(Integer, default=0)
+    avg_rating = Column(Float, default=0)
 
     categories = relationship("Category", secondary="product_category", backref="products")
 
@@ -50,7 +50,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String)
     password = Column(String)
-    
+
     role_id = Column(Integer,ForeignKey('roles.id'))
 
     role = relationship('Role', backref='users')

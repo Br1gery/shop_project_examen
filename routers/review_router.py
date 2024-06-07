@@ -24,7 +24,13 @@ async def add_review(rev_input:pyd.ReviewCreate,username=Depends(auth_handler.au
         models.User.username == username
     ).first()
 
-    print(user_db.id)
+    prod_db = db.query(models.Product).filter(
+        models.Product.id == rev_input.product_id
+    ).first()
+
+    if not prod_db:
+        raise HTTPException(404,'Product not found')
+    avg_rate = []
 
     rev_db = models.Review(
         body= rev_input.body,
@@ -34,6 +40,14 @@ async def add_review(rev_input:pyd.ReviewCreate,username=Depends(auth_handler.au
     )
 
     db.add(rev_db)
+    db.commit()
+    reviews_db = db.query(models.Review).filter(
+        models.Review.product_id == rev_input.product_id
+    ).all()
+    for i in range(len(reviews_db)):
+        avg_rate.append(reviews_db[i].rating)
+
+    prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
     db.commit()
     return rev_db
 
@@ -54,12 +68,29 @@ async def change_review(rev_input:pyd.ReviewCreate,review_id:int,username=Depend
 
     rev_db.body = rev_input.body
     rev_db.rating = rev_input.rating
+    avg_rate = []
+    db.commit()
+    reviews_db = db.query(models.Review).filter(
+        models.Review.product_id == rev_input.product_id
+    ).all()
 
+    for i in range(len(reviews_db)):
+        avg_rate.append(reviews_db[i].rating)
+
+    prod_db = db.query(models.Product).filter(
+        models.Product.id == rev_input.product_id
+    ).first()
+
+    prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
     db.commit()
     return rev_db
     
 @router.delete('/delete/{review_id}')
 async def delete_review(review_id:int,username = Depends(auth_handler.auth_wrapper),db:Session=Depends(get_db)):
+    user_db = db.query(models.User).filter(
+        models.User.username == username
+    ).first()
+    
     rev_db = db.query(models.Review).filter(
         models.Review.id == review_id
     ).first()
@@ -70,9 +101,36 @@ async def delete_review(review_id:int,username = Depends(auth_handler.auth_wrapp
         models.User.username == username
     ).first()
 
-    if rev_db.user_id != user_db.id:
+    if (rev_db.user_id != user_db.id):
+        print(rev_db.user_id)
+        print(user_db.id)
+        print(user_db.role_id)
+        if user_db.role_id !=1:
+            db.delete(rev_db)
+            db.commit()
+            return 'success'
         raise HTTPException(401,"Не удалить...")
     
+    rev_db = db.query(models.Review).filter(
+        models.Review.id == review_id
+    ).first()
+    if not rev_db:
+        raise HTTPException(404,detail='Review not found')
+
     db.delete(rev_db)
+    db.commit()
+    avg_rate = []
+    reviews_db = db.query(models.Review).filter(
+        models.Review.product_id == rev_db.product_id
+    ).all()
+
+    for i in range(len(reviews_db)):
+        avg_rate.append(reviews_db[i].rating)
+
+    prod_db = db.query(models.Product).filter(
+        models.Product.id == rev_db.product_id
+    ).first()
+    
+    prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
     db.commit()
     return 'success'

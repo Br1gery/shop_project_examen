@@ -15,7 +15,7 @@ class ProductBase(BaseModel):
     name: str = Field(...,example='example_name')
     description: str = Field(..., example = 'example_description')
     price: int = Field(...,gt = 0, example = 100)
-    avg_rating: int = Field(...,gt = 0, example = 0)
+    avg_rating: float = Field(...,ge = 0, example = 0)
 
     class Config:
         orm_mode = True
