@@ -68,12 +68,13 @@ async def change_review(rev_input:pyd.ReviewCreate,review_id:int,username=Depend
 
     rev_db.body = rev_input.body
     rev_db.rating = rev_input.rating
-    avg_rate = []
     db.commit()
     reviews_db = db.query(models.Review).filter(
         models.Review.product_id == rev_input.product_id
     ).all()
-
+    if not reviews_db:
+        raise HTTPException(404,'Review not found')
+    avg_rate = []
     for i in range(len(reviews_db)):
         avg_rate.append(reviews_db[i].rating)
 
@@ -83,7 +84,9 @@ async def change_review(rev_input:pyd.ReviewCreate,review_id:int,username=Depend
 
     if not prod_db:
         raise HTTPException(404,'Product not found')
-
+    print(reviews_db)
+    print(avg_rate)
+    print(sum(avg_rate))
     prod_db.avg_rating = round(sum(avg_rate)/len(reviews_db),2)
     db.commit()
     return rev_db
